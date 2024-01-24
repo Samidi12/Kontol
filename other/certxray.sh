@@ -1,39 +1,244 @@
-NC='\e[0m'
-DEFBOLD='\e[39;1m'
-RB='\e[31;1m'
-GB='\e[32;1m'
-YB='\e[33;1m'
-BB='\e[34;1m'
-MB='\e[35;1m'
-CB='\e[35;1m'
-WB='\e[37;1m'
-clear
-echo -e "${GB}[ INFO ]${NC} ${YB}Start${NC} "
-sleep 0.5
-systemctl stop nginx
-domain=$(cat /var/lib/dnsvps.conf | cut -d'=' -f2)
-Cek=$(lsof -i:80 | cut -d' ' -f1 | awk 'NR==2 {print $1}')
-if [[ ! -z "$Cek" ]]; then
-sleep 1
-echo -e "${RB}[ WARNING ]${NC} ${YB}Detected port 80 used by $Cek${NC} "
-systemctl stop $Cek
-sleep 2
-echo -e "${GB}[ INFO ]${NC} ${YB}Processing to stop $Cek${NC} "
-sleep 1
-fi
-echo -e "${GB}[ INFO ]${NC} ${YB}Starting renew cert...${NC} "
-sleep 2
-cd .acme.sh
-bash acme.sh --issue -d $domain --server letsencrypt --keylength ec-256 --fullchain-file /usr/local/etc/xray/fullchain.crt --key-file /usr/local/etc/xray/private.key --standalone --force
-echo -e "${GB}[ INFO ]${NC} ${YB}Renew cert done...${NC} "
-sleep 2
-echo -e "${GB}[ INFO ]${NC} ${YB}Starting service $Cek${NC} "
-sleep 2
-echo "$domain" > /usr/local/etc/xray/domain
-systemctl restart $Cek
-systemctl restart nginx
-echo -e "${GB}[ INFO ]${NC} ${YB}All finished...${NC} "
-sleep 0.5
-echo ""
-read -n 1 -s -r -p "Press any key to back on menu"
-menu
+    server {
+             listen 8000;
+             listen [::]:8000;
+             root /var/www/html;
+        }
+    server {
+             listen 80;
+             listen [::]:80;
+             listen 2052;
+             listen [::]:2052;
+             listen 2082;
+             listen [::]:2082;
+             listen 2086;
+             listen [::]:2086;
+             listen 2095;
+             listen [::]:2095;
+             listen 8080;
+             listen [::]:8080;
+             listen 8880;
+             listen [::]:8880;
+             listen 443 ssl http2;
+             listen [::]:443 ssl http2;
+             listen 2053 ssl ssl http2;
+             listen [::]:2053 ssl http2;
+             listen 2083 ssl ssl http2;
+             listen [::]:2083 ssl http2;
+             listen 2087 ssl ssl http2;
+             listen [::]:2087 ssl http2;
+             listen 2096 ssl ssl http2;
+             listen [::]:2096 ssl http2;
+             listen 8443 ssl ssl http2;
+             listen [::]:8443 ssl http2;
+             ssl_certificate /usr/local/etc/xray/fullchain.crt;
+             ssl_certificate_key /usr/local/etc/xray/private.key;
+             ssl_ciphers EECDH+CHACHA20:EECDH+CHACHA20-draft:EECDH+ECDSA+AES128:EECDH+aRSA+AES128:RSA+AES128:EECDH+ECDSA+AES256:EECDH+aRSA+AES256:RSA+AES256:EECDH+ECDSA+3DES:EECDH+aRSA+3DES:RSA+3DES:!MD5;
+             ssl_protocols TLSv1.1 TLSv1.2 TLSv1.3;
+location / {
+if ($http_upgrade != "Upgrade") {
+rewrite /(.*) /vmess break;
+}
+proxy_redirect off;
+proxy_pass http://127.0.0.1:10001;
+proxy_http_version 1.1;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection "upgrade";
+proxy_set_header Host $host;
+}
+location /vless {
+proxy_redirect off;
+proxy_pass http://127.0.0.1:10002;
+proxy_http_version 1.1;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection "upgrade";
+proxy_set_header Host $host;
+}
+location /trojan {
+proxy_redirect off;
+proxy_pass http://127.0.0.1:10003;
+proxy_http_version 1.1;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection "upgrade";
+proxy_set_header Host $host;
+}
+location /shadowsocks {
+proxy_redirect off;
+proxy_pass http://127.0.0.1:10004;
+proxy_http_version 1.1;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection "upgrade";
+proxy_set_header Host $host;
+}
+location /shadowsocks2022 {
+proxy_redirect off;
+proxy_pass http://127.0.0.1:10005;
+proxy_http_version 1.1;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection "upgrade";
+proxy_set_header Host $host;
+}
+location /socks5 {
+proxy_redirect off;
+proxy_pass http://127.0.0.1:10006;
+proxy_http_version 1.1;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection "upgrade";
+proxy_set_header Host $host;
+}
+location ^~ /vmess-grpc {
+proxy_redirect off;
+grpc_set_header X-Real-IP $remote_addr;
+    server {
+             listen 8000;
+             listen [::]:8000;
+             root /var/www/html;
+        }
+    server {
+             listen 80;
+             listen [::]:80;
+             listen 2052;
+             listen [::]:2052;
+             listen 2082;
+             listen [::]:2082;
+             listen 2086;
+             listen [::]:2086;
+             listen 2095;
+             listen [::]:2095;
+             listen 8080;
+             listen [::]:8080;
+             listen 8880;
+             listen [::]:8880;
+             listen 443 ssl http2;
+             listen [::]:443 ssl http2;
+             listen 2053 ssl ssl http2;
+             listen [::]:2053 ssl http2;
+             listen 2083 ssl ssl http2;
+             listen [::]:2083 ssl http2;
+             listen 2087 ssl ssl http2;
+             listen [::]:2087 ssl http2;
+             listen 2096 ssl ssl http2;
+             listen [::]:2096 ssl http2;
+             listen 8443 ssl ssl http2;
+             listen [::]:8443 ssl http2;
+             ssl_certificate /usr/local/etc/xray/fullchain.crt;
+             ssl_certificate_key /usr/local/etc/xray/private.key;
+             ssl_ciphers EECDH+CHACHA20:EECDH+CHACHA20-draft:EECDH+ECDSA+AES128:EECDH+aRSA+AES128:RSA+AES128:EECDH+ECDSA+AES256:EECDH+aRSA+AES256:RSA+AES256:EECDH+ECDSA+3DES:EECDH+aRSA+3DES:RSA+3DES:!MD5;
+             ssl_protocols TLSv1.1 TLSv1.2 TLSv1.3;
+location / {
+if ($http_upgrade != "Upgrade") {
+rewrite /(.*) /vmess break;
+}
+proxy_redirect off;
+proxy_pass http://127.0.0.1:10001;
+proxy_http_version 1.1;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection "upgrade";
+proxy_set_header Host $host;
+}
+location /vless {
+proxy_redirect off;
+proxy_pass http://127.0.0.1:10002;
+proxy_http_version 1.1;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection "upgrade";
+proxy_set_header Host $host;
+}
+location /trojan {
+proxy_redirect off;
+proxy_pass http://127.0.0.1:10003;
+proxy_http_version 1.1;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection "upgrade";
+proxy_set_header Host $host;
+}
+location /shadowsocks {
+proxy_redirect off;
+proxy_pass http://127.0.0.1:10004;
+proxy_http_version 1.1;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection "upgrade";
+proxy_set_header Host $host;
+}
+location /shadowsocks2022 {
+proxy_redirect off;
+proxy_pass http://127.0.0.1:10005;
+proxy_http_version 1.1;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection "upgrade";
+proxy_set_header Host $host;
+}
+location /socks5 {
+proxy_redirect off;
+proxy_pass http://127.0.0.1:10006;
+proxy_http_version 1.1;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection "upgrade";
+proxy_set_header Host $host;
+}
+location ^~ /vmess-grpc {
+proxy_redirect off;
+grpc_set_header X-Real-IP $remote_addr;
+grpc_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+grpc_set_header Host $http_host;
+grpc_pass grpc://127.0.0.1:20001;
+}
+location ^~ /vless-grpc {
+proxy_redirect off;
+grpc_set_header X-Real-IP $remote_addr;
+grpc_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+grpc_set_header Host $http_host;
+grpc_pass grpc://127.0.0.1:20002;
+}
+location ^~ /trojan-grpc {
+proxy_redirect off;
+grpc_set_header X-Real-IP $remote_addr;
+grpc_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+grpc_set_header Host $http_host;
+grpc_pass grpc://127.0.0.1:20003;
+}
+location ^~ /shadowsocks-grpc {
+proxy_redirect off;
+grpc_set_header X-Real-IP $remote_addr;
+grpc_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+grpc_set_header Host $http_host;
+grpc_pass grpc://127.0.0.1:20004;
+}
+location ^~ /shadowsocks2022-grpc {
+proxy_redirect off;
+grpc_set_header X-Real-IP $remote_addr;
+grpc_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+grpc_set_header Host $http_host;
+grpc_pass grpc://127.0.0.1:20005;
+}
+location ^~ /socks5-grpc {
+proxy_redirect off;
+grpc_set_header X-Real-IP $remote_addr;
+grpc_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+grpc_set_header Host $http_host;
+grpc_pass grpc://127.0.0.1:20006;
+}
+        }
